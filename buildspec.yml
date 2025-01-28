@@ -3,35 +3,34 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      java: openjdk8
+      java: corretto8 # Use Amazon Corretto 8 for better support with AWS environments
+    commands:
+      - echo "Installing additional dependencies if needed"
+      - apt-get update -y
+      - apt-get install -y zip # Ensure `zip` is available for creating artifacts
   pre_build:
     commands:
-      - echo Just listing basic information about the environment
-      - which mvn
-      - mvn -version
+      - echo "Listing environment information"
+      - which mvn || echo "Maven not found!"
+      - mvn -version || echo "Maven version unavailable!"
       - pwd
+      - ls -al # Debugging step to verify directory contents
   build:
     commands:
-      - echo Build started on `date`
-      - mvn package
+      - echo "Build started on `date`"
+      - mvn clean package
   post_build:
     commands:
-      - echo Build completed on `date`
-      - echo Working on creating the tar ball with the WAR and AppSpec file for CodeDeploy
-      - mkdir appfiles
+      - echo "Build completed on `date`"
+      - echo "Creating tarball for deployment"
+      - mkdir -p appfiles
+      - cp target/HelloWorld-1.war appfiles/ # Ensure the WAR file is copied correctly
+      - cp appspec.yml appfiles/
       - cd appfiles
-      - cp ../target/HelloWorld-1.war .
-      - cp ../appspec.yml .
-      - ls -al
       - tar -zcvf ../target/HelloWorld.tar.gz *.*
       - cd ..
+      - echo "Tarball created successfully"
 artifacts:
   files:
-# IMPORTANT
-# You have to use the tar.gz if you are manually executing CodeDeploy
     - target/HelloWorld.tar.gz
-# Use the individual files if you are using the CodeDeploy from CodePipeline
-# Reason is pipeline does not untar and errors out saying that the appspec file is not there
-#    - appfiles/appspec.yml
-#    - appfiles/HelloWorld-1.war
   discard-paths: yes
