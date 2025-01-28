@@ -32,5 +32,7 @@ phases:
       - echo "Tarball created successfully"
 artifacts:
   files:
-    - target/HelloWorld.tar.gz
+    #- target/HelloWorld.tar.gz
+    - appfiles/appspec.yml
+    - appfiles/HelloWorld-1.war
   discard-paths: yes
